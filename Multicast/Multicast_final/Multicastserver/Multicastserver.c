@@ -165,6 +165,7 @@ int main(int argc, char *argv[]){
     char*     multicastPort;          /* Arg: Server port */
     char*     filename	;             /* Arg: File to multicast */
 	int		  windowSize;
+	int fail;
     DWORD     multicastTTL;           /* Arg: TTL of multicast packets */
     ADDRINFO* multicastAddr;          /* Multicast address */
     ADDRINFO  hints          = { 0 }; /* Hints for name lookup */
@@ -174,9 +175,9 @@ int main(int argc, char *argv[]){
         DieWithError("WSAStartup() failed");
     }
 	
-    if ( argc < 5 || argc > 6 )
+    if ( argc < 5 || argc > 7 )
     {
-        fprintf(stderr, "Usage:  %s <Multicast Address> <Port> <Filename> <WindowSize> [<TTL>]\n", argv[0]);
+        fprintf(stderr, "Usage:  %s <Multicast Address> <Port> <Filename> <WindowSize> [<TTL>] [<Fail>]\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 	
@@ -187,8 +188,9 @@ int main(int argc, char *argv[]){
 	if (filename == NULL || filename == "") DieWithError("Kein Dateiname angegeben");
 	windowSize = (argc >= 5 ? atoi(argv[4]):1);
 	if (windowSize < 1 || windowSize > 10) DieWithError("WindowSize muss zwischen 1 und 10 liegen");
-    multicastTTL  = (argc == 6 ?         /* Fith arg:  If supplied, use command-line */
+    multicastTTL  = (argc >= 6 ?         /* Fith arg:  If supplied, use command-line */
                      atoi(argv[5]) : 1); /* specified TTL, else use default TTL of 1 */
+	fail = (argc == 7 ? 1 : 0);
 
    
 	
@@ -230,7 +232,7 @@ int main(int argc, char *argv[]){
 
 	while (1) /* Run forever */
 	{
-		int sqnr_counter = 1, fpos = 0, fail = 0;
+		int sqnr_counter = 1, fpos = 0;
 		int recvStringLen;
 		char recvString[500];
 		struct sockaddr_in6 receiver[MAX_MC_RECEIVER];
@@ -301,7 +303,7 @@ int main(int argc, char *argv[]){
 						isFinished = 1;
 					}
 					
-					if (windowSize >= 3 && request.SeNr == 2) request.SeNr = 3; // NACK FALL
+					if (fail && windowSize >= 3 && request.SeNr == 2) request.SeNr = 3; // NACK FALL
 					printf("-SENDING DATA PACKET\tSeqNr: %d | Type: %c\n", request.SeNr, request.ReqType);
 					w = sendto(sock, (const char *)&request, sizeof(request), 0, multicastAddr->ai_addr, multicastAddr->ai_addrlen);
 					if (w == SOCKET_ERROR)			// if sending failed because of socket problems
