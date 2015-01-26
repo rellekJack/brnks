@@ -1,0 +1,19 @@
+﻿Der Buildvorgang wurde am 26.01.2015 09:55:16 gestartet.
+     1>Projekt "C:\Users\Kay\Desktop\Multicast\Multicast\Multicast\Multicast.vcxproj" auf Knoten "2", Build Ziel(e).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt Multicast.c ServerSy.c
+         ServerSy.c
+         Multicast.c
+     1>c:\users\kay\desktop\multicast\multicast\multicast\multicast.c(201): warning C4133: 'Funktion': Inkompatible Typen - von 'int *' zu 'const char *'
+     1>c:\users\kay\desktop\multicast\multicast\multicast\multicast.c(275): warning C4133: 'Funktion': Inkompatible Typen - von 'sockaddr_in6 *' zu 'sockaddr *'
+     1>c:\users\kay\desktop\multicast\multicast\multicast\multicast.c(270): warning C4101: 'ipstr': Unreferenzierte lokale Variable
+         Code wird generiert...
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Kay\Desktop\Multicast\Multicast\Debug\Multicast.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Kay\Desktop\Multicast\Multicast\Debug\Multicast.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Kay\Desktop\Multicast\Multicast\Debug\Multicast.lib" /MACHINE:X86 Debug\Multicast.obj
+         Debug\ServerSy.obj
+         Multicast.vcxproj -> C:\Users\Kay\Desktop\Multicast\Multicast\Debug\Multicast.exe
+     1>Die Erstellung des Projekts "C:\Users\Kay\Desktop\Multicast\Multicast\Multicast\Multicast.vcxproj" ist abgeschlossen, Build Ziel(e).
+
+Build erfolgreich.
+
+Verstrichene Zeit 00:00:02.34

@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Multicast", "Multicast\Multicast.vcxproj", "{488C2457-707E-4623-9CD1-2379285F6B6A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Multicastserver", "Multicastserver\Multicastserver.vcxproj", "{3468C922-A585-4B75-B8BB-4AACD41056F2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{488C2457-707E-4623-9CD1-2379285F6B6A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{488C2457-707E-4623-9CD1-2379285F6B6A}.Debug|Win32.Build.0 = Debug|Win32
+		{488C2457-707E-4623-9CD1-2379285F6B6A}.Release|Win32.ActiveCfg = Release|Win32
+		{488C2457-707E-4623-9CD1-2379285F6B6A}.Release|Win32.Build.0 = Release|Win32
+		{3468C922-A585-4B75-B8BB-4AACD41056F2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3468C922-A585-4B75-B8BB-4AACD41056F2}.Debug|Win32.Build.0 = Debug|Win32
+		{3468C922-A585-4B75-B8BB-4AACD41056F2}.Release|Win32.ActiveCfg = Release|Win32
+		{3468C922-A585-4B75-B8BB-4AACD41056F2}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
