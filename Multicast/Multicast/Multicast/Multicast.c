@@ -24,19 +24,18 @@ void DieWithError(char* errorMessage)
     exit(EXIT_FAILURE);
 }
 
-void createfile(struct request *reqPtr, int *init_file_create)
+void createfile(struct request *reqPtr)
 {
 	FILE *fp;
 
 	if ((fp = fopen(reqPtr->fname, "w+t")) == 0)  // create file
 	{
-		printf("\nFehler: konnte Datei %s nicht oeffnen\a\n", reqPtr->fname); exit(0);
-	}
-	(*init_file_create) = 1;			// indicate that file was created
+		DieWithError("FILE COULD NOT BE CREATED");
+	}			
 	fclose(fp);
 }
 
-int writeFile(char temp[][256], struct request *reqPtr)
+int writeFile(struct request *reqPtr)
 {
 	FILE *fp;
 	int i, j;
@@ -45,20 +44,11 @@ int writeFile(char temp[][256], struct request *reqPtr)
 	{
 		printf("\nFehler: konnte Datei %s nicht oeffnen\a\n", reqPtr->fname); exit(0);
 	}
-	for (j = 0; (j < 100); j++)			// print buffer into file
-	{
-		for (i = 0; (i < 256) /*&& (lol[j][i] != '\0')*/; i++)
-		{
-			if (temp[j][i] != '\0')
-				fputc(temp[j][i], fp);
-			else						//stop if end of file ie reached
-			{
-				fputc(temp[j][i], fp);
-				fclose(fp);
-				return 1;
-			}
-		}
-	}
+	 
+	for (j = 0; (j < reqPtr->FlNr); j++)			// print buffer into file
+		if (reqPtr->name[j] != '\0') fputc(reqPtr->name[j], fp);
+	
+	fputc('\n', fp);
 	fclose(fp);
 	return 0;
 }
@@ -151,7 +141,7 @@ int main(int argc, char* argv[])
     char*      multicastIP;              /* Arg: IP Multicast Address */
     char*      multicastPort;            /* Arg: Port */
 	char*	   id;
-	
+	int windowSize = 1;
     ADDRINFO*  multicastAddr;            /* Multicast Address */
     ADDRINFO*  localAddr;                /* Local address to bind to */
     ADDRINFO   hints          = { 0 };   /* Hints for name lookup */
@@ -170,6 +160,7 @@ int main(int argc, char* argv[])
     multicastIP   = argv[1];      /* First arg:  Multicast IP address */
     multicastPort = argv[2];      /* Second arg: Multicast port */
 	id = argv[3];
+	windowSize = (argc > 4 ? atoi(argv[4]) : 2);
 	
 
     /* Resolve the multicast group address */
@@ -257,14 +248,21 @@ int main(int argc, char* argv[])
 
     freeaddrinfo(localAddr);
     freeaddrinfo(multicastAddr);
+	int isFinished = 0;
+	
+	char **packets = (char**)malloc(windowSize * sizeof(char*));
+	//for (int i = 0; i < windowSize; i++) packets[i] = (char*)malloc(256 * sizeof(char));
 
+	int firstPosition = 0;
 	
 
-    for (;;) /* Run forever */
+    while (!isFinished) /* Run forever */
     {
         time_t timert;
         char   recvString[500];      /* Buffer for received string */
         int    recvStringLen;        /* Length of received string */
+		struct answer answer;
+		struct request request;
 
 
 		char ipstr[INET6_ADDRSTRLEN];
@@ -272,27 +270,43 @@ int main(int argc, char* argv[])
         /* Receive a single datagram from the server */
 		struct sockaddr_in6 remote;
 		int len = sizeof(remote);
-        if ( (recvStringLen = recvfrom(sock, recvString, sizeof(recvString) - 1, 0, &remote, &len)) < 0 )
-		//if ((recvStringLen = recvfrom(sock, recvString, sizeof(recvString) - 1, 0, NULL, 0)) < 0)
+		int w;
+        if ( (recvStringLen = recvfrom(sock, (char*)&request, sizeof(request), 0, &remote, &len)) < 0 )
         {
             DieWithError("recvfrom() failed");
         }
-		
-        recvString[recvStringLen] = '\0';
 
-        /* Print the received string */
-        time(&timert);  /* get time stamp to print with recieved data */
-        printf("Time Received: %.*s : %s\n", strlen(ctime(&timert)) - 1, ctime(&timert), recvString);
-
-		if (sendto(sock, recvString, recvStringLen, 0,
-			(struct sockaddr *)&remote, len) != recvStringLen)
-		{
-			DieWithError("sendto() sent a different number of bytes than expected");
+		switch (request.ReqType){
+		case ReqHello:
+			answer.AnswType = AnswHello;
+			printf("GOT HELLO\nANSWER HELLO\n");
+			w = sendto(sock, (char*)&answer, sizeof(answer), 0, (struct sockaddr *)&remote, len);
+				if (w == SOCKET_ERROR) DieWithError("ERROR SENDING HELLO ANSWER");
+				createfile(&request);
+			break;
+		case ReqData:
+			printf("GOT DATA\nANSWER OK\n");
+			printf("DATA: #%d: %s\n", request.SeNr, request.name);
+			answer.AnswType = AnswOk;
+			w = sendto(sock, (char*)&answer, sizeof(answer), 0, (struct sockaddr *)&remote, len);
+			if (w == SOCKET_ERROR) DieWithError("ERROR SENDING OK ANSWER");
+			writeFile(&request);
+			break;
+		case ReqClose:
+			printf("GOT CLOSE\nANSWER CLOSE\n");
+			answer.AnswType = AnswClose;
+			w = sendto(sock, (char*)&answer, sizeof(answer), 0, (struct sockaddr *)&remote, len);
+			if (w == SOCKET_ERROR) DieWithError("ERROR SENDING CLOSE ANSWER");
+			isFinished = 1;
+			break;
+		default:
+			printf("UNKNOWN PACKETTYPE\n");
+			break;
 		}
-
+		
     }
 
-    /* NOT REACHED */
     closesocket(sock);
+	getchar();
     exit(EXIT_SUCCESS);
 }
