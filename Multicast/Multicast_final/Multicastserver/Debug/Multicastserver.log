@@ -1,25 +1,26 @@
-﻿Der Buildvorgang wurde am 26.01.2015 18:34:21 gestartet.
-     1>Projekt "H:\Multicast\Multicastserver\Multicastserver.vcxproj" auf Knoten "3", Build Ziel(e).
+﻿Der Buildvorgang wurde am 26.01.2015 20:03:21 gestartet.
+     1>Projekt "C:\Users\Kay\Documents\GitHub\brnks\Multicast\Multicast_final\Multicastserver\Multicastserver.vcxproj" auf Knoten "3", Build Ziel(e).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(388,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Multicastserver.vcxproj).  This can lead to incorrect clean and rebuild behavior.
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt ClientSy.c Multicastserver.c
          Multicastserver.c
-     1>h:\multicast\multicastserver\multicastserver.c(141): warning C4047: 'Funktion': Anzahl der Dereferenzierungen bei 'int *' und 'int **' unterschiedlich
-     1>h:\multicast\multicastserver\multicastserver.c(141): warning C4024: 'recvfrom': Unterschiedliche Typen für formalen und übergebenen Parameter 6
-     1>h:\multicast\multicastserver\multicastserver.c(154): warning C4172: Adresse einer lokalen Variablen oder eines temporären Werts wird zurückgegeben
-     1>h:\multicast\multicastserver\multicastserver.c(327): warning C4090: 'Funktion': Unterschiedliche 'const'-Qualifizierer
-     1>h:\multicast\multicastserver\multicastserver.c(344): warning C4020: 'DieWithError': Zu viele übergebene Parameter
-     1>h:\multicast\multicastserver\multicastserver.c(382): warning C4090: 'Funktion': Unterschiedliche 'const'-Qualifizierer
-     1>h:\multicast\multicastserver\multicastserver.c(225): warning C4101: 'timer': Unreferenzierte lokale Variable
-     1>h:\multicast\multicastserver\multicastserver.c(235): warning C4101: 'recvString': Unreferenzierte lokale Variable
-     1>h:\multicast\multicastserver\multicastserver.c(236): warning C4101: 'receiver': Unreferenzierte lokale Variable
+     1>c:\users\kay\documents\github\brnks\multicast\multicast_final\multicastserver\multicastserver.c(141): warning C4047: 'Funktion': Anzahl der Dereferenzierungen bei 'int *' und 'int **' unterschiedlich
+     1>c:\users\kay\documents\github\brnks\multicast\multicast_final\multicastserver\multicastserver.c(141): warning C4024: 'recvfrom': Unterschiedliche Typen für formalen und übergebenen Parameter 6
+     1>c:\users\kay\documents\github\brnks\multicast\multicast_final\multicastserver\multicastserver.c(154): warning C4172: Adresse einer lokalen Variablen oder eines temporären Werts wird zurückgegeben
+     1>c:\users\kay\documents\github\brnks\multicast\multicast_final\multicastserver\multicastserver.c(327): warning C4090: 'Funktion': Unterschiedliche 'const'-Qualifizierer
+     1>c:\users\kay\documents\github\brnks\multicast\multicast_final\multicastserver\multicastserver.c(344): warning C4020: 'DieWithError': Zu viele übergebene Parameter
+     1>c:\users\kay\documents\github\brnks\multicast\multicast_final\multicastserver\multicastserver.c(383): warning C4090: 'Funktion': Unterschiedliche 'const'-Qualifizierer
+     1>c:\users\kay\documents\github\brnks\multicast\multicast_final\multicastserver\multicastserver.c(225): warning C4101: 'timer': Unreferenzierte lokale Variable
+     1>c:\users\kay\documents\github\brnks\multicast\multicast_final\multicastserver\multicastserver.c(235): warning C4101: 'recvString': Unreferenzierte lokale Variable
+     1>c:\users\kay\documents\github\brnks\multicast\multicast_final\multicastserver\multicastserver.c(236): warning C4101: 'receiver': Unreferenzierte lokale Variable
          ClientSy.c
          Code wird generiert...
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"H:\Multicast\Debug\Multicastserver.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"H:\Multicast\Debug\Multicastserver.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"H:\Multicast\Debug\Multicastserver.lib" /MACHINE:X86 Debug\ClientSy.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Kay\Documents\GitHub\brnks\Multicast\Multicast_final\Debug\Sender.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Kay\Documents\GitHub\brnks\Multicast\Multicast_final\Debug\Sender.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Kay\Documents\GitHub\brnks\Multicast\Multicast_final\Debug\Sender.lib" /MACHINE:X86 Debug\ClientSy.obj
          Debug\Multicastserver.obj
-         Multicastserver.vcxproj -> H:\Multicast\Debug\Multicastserver.exe
-     1>Die Erstellung des Projekts "H:\Multicast\Multicastserver\Multicastserver.vcxproj" ist abgeschlossen, Build Ziel(e).
+         Multicastserver.vcxproj -> C:\Users\Kay\Documents\GitHub\brnks\Multicast\Multicast_final\Debug\Sender.exe
+     1>Die Erstellung des Projekts "C:\Users\Kay\Documents\GitHub\brnks\Multicast\Multicast_final\Multicastserver\Multicastserver.vcxproj" ist abgeschlossen, Build Ziel(e).
 
 Build erfolgreich.
 
-Verstrichene Zeit 00:00:07.39
+Verstrichene Zeit 00:00:02.06

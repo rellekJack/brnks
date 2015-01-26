@@ -301,7 +301,7 @@ int main(int argc, char *argv[]){
 						isFinished = 1;
 					}
 					
-					//if (windowSize >= 3 && request.SeNr == 2) request.SeNr = 3; // NACK FALL
+					if (windowSize >= 3 && request.SeNr == 2) request.SeNr = 3; // NACK FALL
 					printf("-SENDING DATA PACKET\tSeqNr: %d | Type: %c\n", request.SeNr, request.ReqType);
 					w = sendto(sock, (const char *)&request, sizeof(request), 0, multicastAddr->ai_addr, multicastAddr->ai_addrlen);
 					if (w == SOCKET_ERROR)			// if sending failed because of socket problems
@@ -311,7 +311,7 @@ int main(int argc, char *argv[]){
 				}
 				//if (isFinished) break;
 				
-				for (trysCount = 0; trysCount < TIMEOUT && responseCount < receiverCount * windowSize && !receivedNACK; trysCount++){
+				for (trysCount = 0; trysCount < TIMEOUT && receiverCount > 0 && responseCount / windowSize < receiverCount * windowSize && !receivedNACK; trysCount++){
 					while (1){
 						FD_ZERO(&rfds);
 						FD_SET(sock, &rfds);
@@ -349,8 +349,9 @@ int main(int argc, char *argv[]){
 					}
 				}
 				
-				if (trysCount == TIMEOUT && responseCount < receiverCount) receiverCount = responseCount; // AFTER 3 TRYS SET receiverCount to responseCount
-			} while (receivedNACK || responseCount < receiverCount || !isFinished);
+				if (trysCount == TIMEOUT && receiverCount > 0 && responseCount / windowSize < receiverCount) 
+					receiverCount = responseCount / windowSize; // AFTER 3 TRYS SET receiverCount to responseCount
+			} while (receivedNACK ||receiverCount > 0 && responseCount / windowSize < receiverCount || !isFinished);
 		}
 
 		/*SENDING CLOSE*/
@@ -366,7 +367,7 @@ int main(int argc, char *argv[]){
 			{
 				fprintf(stderr, "send() failed: error %d\n", WSAGetLastError());
 			}
-			for (trysCount = 0; trysCount < TIMEOUT && responseCount < receiverCount; trysCount++){
+			for (trysCount = 0; trysCount < TIMEOUT && receiverCount > 0 && responseCount < receiverCount; trysCount++){
 				while (1){
 					FD_ZERO(&rfds);
 					FD_SET(sock, &rfds);

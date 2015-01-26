@@ -261,6 +261,7 @@ int main(int argc, char* argv[])
 		window[i].SeNr = -1;
 
 	int firstPosition = 1;
+	int lastNack = -1;
 
 	
 
@@ -306,9 +307,10 @@ int main(int argc, char* argv[])
 				incrementWindow(&window, windowSize);
 				firstPosition++;
 			}
-			if (i == 0 && windowSize > 1 && window[1].SeNr != -1){
+			if (i == 0 && windowSize > 1 && window[1].SeNr != -1 && lastNack != window[1].SeNr - 1){
 				answer.AnswType = AnswNACK;
 				answer.SeNo = window[1].SeNr - 1;
+				lastNack = answer.SeNo;
 				printf("SENDING NACK FOR #%d\n",answer.SeNo);
 				w = sendto(sock, (char*)&answer, sizeof(answer), 0, (struct sockaddr *)&remote, len);
 			}
