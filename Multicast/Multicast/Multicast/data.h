@@ -15,7 +15,7 @@ struct request
 #define ReqData		'D'						// ReqData 'D'
 #define ReqClose	'C'						// ReqClose
 	long			FlNr;					/* length of data in Byte ; if it is a Hello packet we transmit the window here */
-	unsigned long	SeNr;					/* Sequence Number (== 0) begin of file */
+	long			SeNr;					/* Sequence Number (== 0) begin of file */
 #define PufferSize	256
 	char			name[PufferSize];
 	char			fname[50];				/* if it is a Hello packet we can transmit filename here */
@@ -27,9 +27,10 @@ struct answer
 #define AnswHello	'H'
 #define AnswOk		'O'
 #define AnswWarn	'W'
+#define AnswNACK	'N'
 #define AnswClose	'C'
 #define AnswErr		0xFF
-	unsigned		FlNr;
-	unsigned		SeNo;
+	long			FlNr;
+	long			SeNo;
 #define ErrNo		SeNo					/* Are identical */
 };

@@ -169,6 +169,7 @@ int main(int argc, char *argv[]){
     char*     multicastIP;            /* Arg: IP Multicast address */
     char*     multicastPort;          /* Arg: Server port */
     char*     filename	;             /* Arg: File to multicast */
+	int		  windowSize;
     DWORD     multicastTTL;           /* Arg: TTL of multicast packets */
     ADDRINFO* multicastAddr;          /* Multicast address */
     ADDRINFO  hints          = { 0 }; /* Hints for name lookup */
@@ -178,9 +179,9 @@ int main(int argc, char *argv[]){
         DieWithError("WSAStartup() failed");
     }
 	
-    if ( argc < 4 || argc > 5 )
+    if ( argc < 5 || argc > 6 )
     {
-        fprintf(stderr, "Usage:  %s <Multicast Address> <Port> <Send String> [<TTL>]\n", argv[0]);
+        fprintf(stderr, "Usage:  %s <Multicast Address> <Port> <Filename> <WindowSize> [<TTL>]\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 	
@@ -189,7 +190,8 @@ int main(int argc, char *argv[]){
     multicastPort = argv[2];             /* Second arg:  multicast port */
 	filename    = argv[3];             /* Third arg:   String to multicast */
 	if (filename == NULL || filename == "") DieWithError("Kein Dateiname angegeben");
-    multicastTTL  = (argc == 4 ?         /* Fith arg:  If supplied, use command-line */
+	windowSize = atoi(argv[4]);
+    multicastTTL  = (argc == 6 ?         /* Fith arg:  If supplied, use command-line */
                      atoi(argv[5]) : 1); /* specified TTL, else use default TTL of 1 */
    
 	
@@ -285,20 +287,29 @@ int main(int argc, char *argv[]){
 
 		request.ReqType = ReqData;
 		/*SENDING DATA*/
-		while (receiverCount > 0 && readFile(&request, filename, &fpos)){
+		int isFinished = 0;
+		while (receiverCount > 0 && !isFinished){
 			int receivedNACK;
 			do{
 				responseCount = 0;
 				receivedNACK = 0;
-				request.SeNr = sqnr_counter;
-				sqnr_counter++;
-				printf("-SENDING DATA PACKET\tSeqNr: %d | Type: %c\n", request.SeNr, request.ReqType);
-				w = sendto(sock, (const char *)&request, sizeof(request), 0, multicastAddr->ai_addr, multicastAddr->ai_addrlen);
-				if (w == SOCKET_ERROR)			// if sending failed because of socket problems
-				{
-					fprintf(stderr, "send() failed: error %d\n", WSAGetLastError());
+				for (int c = 0; c < windowSize; c++){
+					if (!readFile(&request, filename, &fpos)){
+						isFinished = 1;
+						break;
+					}
+					request.SeNr = sqnr_counter;
+					sqnr_counter++;
+					printf("-SENDING DATA PACKET\tSeqNr: %d | Type: %c\n", request.SeNr, request.ReqType);
+					w = sendto(sock, (const char *)&request, sizeof(request), 0, multicastAddr->ai_addr, multicastAddr->ai_addrlen);
+					if (w == SOCKET_ERROR)			// if sending failed because of socket problems
+					{
+						fprintf(stderr, "send() failed: error %d\n", WSAGetLastError());
+					}
 				}
-				for (trysCount = 0; trysCount < TIMEOUT && responseCount < receiverCount && !receivedNACK; trysCount++){
+				if (isFinished) break;
+				
+				for (trysCount = 0; trysCount < TIMEOUT && responseCount < receiverCount * windowSize && !receivedNACK; trysCount++){
 					while (1){
 						FD_ZERO(&rfds);
 						FD_SET(sock, &rfds);
@@ -316,7 +327,7 @@ int main(int argc, char *argv[]){
 							DieWithError("recvfrom() failed");
 						}
 
-						printf("++ GOT ANSWER: %c ++\n", dataAnswer.AnswType);
+						printf("++ GOT ANSWER %c FOR #%d++\n", dataAnswer.AnswType, dataAnswer.SeNo);
 
 						if (dataAnswer.AnswType == AnswOk){
 							responseCount++;

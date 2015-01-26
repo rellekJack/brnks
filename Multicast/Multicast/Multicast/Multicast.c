@@ -134,6 +134,13 @@ struct answer *answreturn(struct request *reqPtr, int *sqnr_counter, int *window
 	return (&answ);
 }
 
+void incrementWindow(struct request **window, int windowSize){
+	writeFile(&window[0]);
+	for (int i = 0; i < windowSize - 1; i++)
+		(*window)[i] = (*window)[i + 1];
+	(*window)[windowSize - 1].SeNr = -1;
+}
+
 int main(int argc, char* argv[])
 {
     SOCKET     sock;                     /* Socket */
@@ -250,10 +257,12 @@ int main(int argc, char* argv[])
     freeaddrinfo(multicastAddr);
 	int isFinished = 0;
 	
-	char **packets = (char**)malloc(windowSize * sizeof(char*));
-	//for (int i = 0; i < windowSize; i++) packets[i] = (char*)malloc(256 * sizeof(char));
+	struct request *window = (struct request*)malloc(windowSize * sizeof(struct request));
+	for (int i = 0; i < windowSize; i++) 
+		window[i].SeNr = -1;
 
-	int firstPosition = 0;
+	int firstPosition = 1;
+
 	
 
     while (!isFinished) /* Run forever */
@@ -288,9 +297,22 @@ int main(int argc, char* argv[])
 			printf("GOT DATA\nANSWER OK\n");
 			printf("DATA: #%d: %s\n", request.SeNr, request.name);
 			answer.AnswType = AnswOk;
+			answer.SeNo = request.SeNr;
 			w = sendto(sock, (char*)&answer, sizeof(answer), 0, (struct sockaddr *)&remote, len);
 			if (w == SOCKET_ERROR) DieWithError("ERROR SENDING OK ANSWER");
-			writeFile(&request);
+			if (window[request.SeNr - firstPosition].SeNr == -1)
+				window[request.SeNr - firstPosition] = request;
+			int i;
+			for (i = 0; window[i].SeNr != -1; i++){
+				incrementWindow(&window, windowSize);
+				firstPosition++;
+			}
+			if (i == 0 && windowSize > 1 && window[1].SeNr != -1){
+				answer.AnswType = AnswNACK;
+				answer.SeNo = window[1].SeNr - 1;
+				printf("SENDING NACK FOR #%d\n",answer.SeNo);
+				w = sendto(sock, (char*)&answer, sizeof(answer), 0, (struct sockaddr *)&remote, len);
+			}
 			break;
 		case ReqClose:
 			printf("GOT CLOSE\nANSWER CLOSE\n");
