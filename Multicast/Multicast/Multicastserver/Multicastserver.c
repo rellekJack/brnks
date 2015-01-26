@@ -48,34 +48,29 @@ static void DieWithError(char* errorMessage)
 //	return answPtr->AnswType;
 //}
 
-int readFile(struct request *reqptr, char *file, int *fpos)
-{
+void createRequestStack(char* file, struct request **stack, int *length){
 	FILE *fp;
-	int i, ende = 1;
-
-	if (reqptr->ReqType == ReqData)
+	int i;
+	char c = '\0';
+	int seqNr = 1;
+	if ((fp = fopen(file, "rt")) == 0)		// open file
 	{
-		if ((fp = fopen(file, "rt")) == 0)		// open file
-		{
-			DieWithError("Konnte Datei nicht öffnen");
-		}
-		fseek(fp, *fpos, SEEK_SET);				// get to the right spot in the file
-		for (i = 0; i < PufferSize; i++)
-		{
-			if ((reqptr->name[i] = fgetc(fp)) == EOF || reqptr->name[i] == '\n') // if the end of the file is reached
-			{
-				reqptr->name[i] = '\0';			// put an '\0' ...
-				if (reqptr->name[0] == '\0'){
-					ende = 0;
-				}
-				break;									// stop reading from file
-			}
-		}
-		reqptr->FlNr = i;						// set data-package file-size
-		*fpos = ftell(fp);						// save current file position
-		fclose(fp);
+		DieWithError("FAILED TO OPEN FILE");
 	}
-	return ende;
+	while (c != EOF && (c = fgetc(fp)) != EOF){
+		i = 0;
+		(*stack) = realloc(*stack, (++(*length)) * sizeof(struct request));
+		(*stack)[*length - 1].ReqType = ReqData;
+		(*stack)[*length - 1].SeNr = seqNr++;
+		strcpy((*stack)[*length - 1].fname, file);
+		do{
+			(*stack)[*length - 1].name[i++] = c;
+		} while ((c = fgetc(fp)) != '\n' && c != EOF);
+		(*stack)[*length - 1].name[i] = '\0';
+		(*stack)[*length - 1].FlNr = i;
+
+	}
+	fclose(fp);
 }
 
 //void sendRequest(SOCKET ConnSocket, struct request *req, struct timeouts **timeouts, int *sqnr_counter, struct request *temp,  struct sockaddr_in6 *remote, int *sizeOfRemote)
@@ -135,30 +130,6 @@ int readFile(struct request *reqptr, char *file, int *fpos)
 //	
 //}
 
-struct answer *recvanswer(SOCKET ConnSocket, struct sockaddr_in6 *remote, int *sizeOfRemote)
-{
-	int recvcc;						/* Length of message */
-	int remoteAddrSize = sizeof(struct sockaddr_in6);
-	struct answer answ;
-
-	/* Receive a message from a socket */
-	printf("-RECEIVING ANSWER\t");
-	recvcc = recvfrom(ConnSocket, (char *)&answ, sizeof(answ), 0, (struct sockaddr *)remote, &sizeOfRemote); // receive answer
-	if (recvcc == SOCKET_ERROR)				// if receiving failed because of socket problems
-	{
-		printf("... NO SUCCESS ... trying again\n");
-
-	}
-	if (recvcc == 0)						// if server closed connection
-	{
-		printf("Server closed connection\n");
-		closesocket(ConnSocket);
-		WSACleanup();
-		exit(-1);
-	}
-	return (&answ);
-}
-
 struct timeval newTimeout(long msecLength){
 	return (struct timeval){ 0, msecLength * 1000 };
 }
@@ -190,9 +161,11 @@ int main(int argc, char *argv[]){
     multicastPort = argv[2];             /* Second arg:  multicast port */
 	filename    = argv[3];             /* Third arg:   String to multicast */
 	if (filename == NULL || filename == "") DieWithError("Kein Dateiname angegeben");
-	windowSize = atoi(argv[4]);
+	windowSize = (argc == 5 ? atoi(argv[4]);
+	if (windowSize < 1 || windowSize > 10) DieWithError("WindowSize muss zwischen 1 und 10 liegen");
     multicastTTL  = (argc == 6 ?         /* Fith arg:  If supplied, use command-line */
                      atoi(argv[5]) : 1); /* specified TTL, else use default TTL of 1 */
+
    
 	
 
@@ -225,7 +198,7 @@ int main(int argc, char *argv[]){
 
 	
 
-	struct timeval timer;
+	
 	fd_set rfds;
 	
 
@@ -235,8 +208,8 @@ int main(int argc, char *argv[]){
 	{
 		int sqnr_counter = 1, fpos = 0, fail = 0;
 		int recvStringLen;
-		char recvString[500];
-		struct sockaddr_in6 receiver[MAX_MC_RECEIVER];
+
+		
 		struct request request;
 		int responseCount;
 
@@ -286,6 +259,11 @@ int main(int argc, char *argv[]){
 		}
 
 		request.ReqType = ReqData;
+		struct request *requests = NULL;
+		int length = 0;
+		int position = 0;
+
+		createRequestStack(filename, &requests, &length);
 		/*SENDING DATA*/
 		int isFinished = 0;
 		while (receiverCount > 0 && !isFinished){
@@ -294,22 +272,22 @@ int main(int argc, char *argv[]){
 				responseCount = 0;
 				receivedNACK = 0;
 				for (int c = 0; c < windowSize; c++){
-					if (!readFile(&request, filename, &fpos)){
+					if (position == length){
 						isFinished = 1;
 						break;
 					}
-					request.SeNr = sqnr_counter;
-					sqnr_counter++;
+					request = requests[position++];
+					//if (request.SeNr == 2) request.SeNr = 3; // RESULTS IN NACK
 					printf("-SENDING DATA PACKET\tSeqNr: %d | Type: %c\n", request.SeNr, request.ReqType);
 					w = sendto(sock, (const char *)&request, sizeof(request), 0, multicastAddr->ai_addr, multicastAddr->ai_addrlen);
 					if (w == SOCKET_ERROR)			// if sending failed because of socket problems
 					{
-						fprintf(stderr, "send() failed: error %d\n", WSAGetLastError());
+						DieWithError("SENDING DATA PACKET FAILEDs");
 					}
 				}
-				if (isFinished) break;
 				
-				for (trysCount = 0; trysCount < TIMEOUT && responseCount < receiverCount * windowSize && !receivedNACK; trysCount++){
+				
+				for (trysCount = 0; trysCount < TIMEOUT && responseCount < receiverCount * windowSize || receivedNACK; trysCount++){
 					while (1){
 						FD_ZERO(&rfds);
 						FD_SET(sock, &rfds);
@@ -322,7 +300,7 @@ int main(int argc, char *argv[]){
 						if (w == 0){
 							break;
 						}
-						if ((recvStringLen = recvfrom(sock, (const char*)&dataAnswer, sizeof(dataAnswer), 0, NULL,0) < 0))
+						if ((recvStringLen = recvfrom(sock, (char*)&dataAnswer, sizeof(dataAnswer), 0, NULL,0) < 0))
 						{
 							DieWithError("recvfrom() failed");
 						}
@@ -334,20 +312,28 @@ int main(int argc, char *argv[]){
 						}
 
 						if (dataAnswer.AnswType == AnswNACK){
-							receivedNACK = 1;
-							break;
+							request = requests[dataAnswer.SeNo - 1];
+							printf("-RESENDING DATA PACKET\tSeqNr: %d | Type: %c\n", request.SeNr, request.ReqType);
+							w = sendto(sock, (char *)&request, sizeof(request), 0, multicastAddr->ai_addr, multicastAddr->ai_addrlen);
+							if (w == SOCKET_ERROR)			// if sending failed because of socket problems
+							{
+								DieWithError("ERROR WHILE RESENDING PACKET");
+							}
+							trysCount = 0;
+							responseCount = 0;
 						}
 					}
 				}
+				
 				if (trysCount == TIMEOUT && responseCount < receiverCount) receiverCount = responseCount; // AFTER 3 TRYS SET receiverCount to responseCount
-			} while (receivedNACK || responseCount < receiverCount);
+			} while (receivedNACK || responseCount < receiverCount || !isFinished);
 		}
 
 		/*SENDING CLOSE*/
 		responseCount = 0;
 		while (receiverCount > 0 && responseCount < receiverCount){
 			responseCount = 0;
-			request.SeNr = sqnr_counter;
+			request.SeNr = length + 1;
 			request.ReqType = ReqClose;
 			trysCount = 0;
 			printf("-SENDING CLOSE PACKET\tSeqNr: %d | Type: %c\n", request.SeNr, request.ReqType);
@@ -369,7 +355,7 @@ int main(int argc, char *argv[]){
 					if (w == 0){
 						break;
 					}
-					if ((recvStringLen = recvfrom(sock, (const char*)&closeAnswer, sizeof(closeAnswer), 0, NULL, 0) < 0))
+					if ((recvStringLen = recvfrom(sock, (char*)&closeAnswer, sizeof(closeAnswer), 0, NULL, 0) < 0))
 					{
 						DieWithError("recvfrom() failed");
 					}

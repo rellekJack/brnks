@@ -135,7 +135,7 @@ struct answer *answreturn(struct request *reqPtr, int *sqnr_counter, int *window
 }
 
 void incrementWindow(struct request **window, int windowSize){
-	writeFile(&window[0]);
+	writeFile(window[0]);
 	for (int i = 0; i < windowSize - 1; i++)
 		(*window)[i] = (*window)[i + 1];
 	(*window)[windowSize - 1].SeNr = -1;
@@ -166,8 +166,7 @@ int main(int argc, char* argv[])
 
     multicastIP   = argv[1];      /* First arg:  Multicast IP address */
     multicastPort = argv[2];      /* Second arg: Multicast port */
-	id = argv[3];
-	windowSize = (argc > 4 ? atoi(argv[4]) : 2);
+	windowSize = (argc > 4 ? atoi(argv[4]) : 1);
 	
 
     /* Resolve the multicast group address */
